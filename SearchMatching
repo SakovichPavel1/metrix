@@ -1,0 +1,66 @@
+using System;
+using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.Win32;
+using System.IO;
+using System.Collections.Generic;
+
+namespace ConsoleApplication2
+{
+    public abstract class SearchMatching
+    {        
+        public static void CountingOccurrences(String Code)
+        {
+            string pattern = @"(\w+\s+\w+\s*\(.*\)\s*\{)";       
+            int CountOfFunctions = 0;
+            List<int> ArrOfСycle = new List<int>();
+            Regex myReg = new Regex(pattern); 
+            int length = 0;
+            
+            while (true)
+            {
+                if (Code.Length != 0)
+                {
+                    Match match = myReg.Match(Code);
+                    CountOfFunctions++;
+                    length = 0;
+                    int level = 1;
+                    for (int i = match.Index + match.Length; level != 0; i++)
+                    {
+                        if (Equals(Code[i], '{'))
+                            level = level + 1;
+                        if (Equals(Code[i], '}'))
+                            level = level - 1;
+                        length = i + 1;
+                    }
+                    string temp = "";
+                    for (int i = match.Index + match.Length; i < length; i++)
+                        temp = temp + Code[i];
+
+                    string patternCicle = @"((if\s*\(.*\w\w*.*\))|(for\s*\(.*\)\s*)|(\s*while\s*\(.*\))|(\bcase:))";
+                    Regex Reg = new Regex(patternCicle);
+                     
+                    MatchCollection matches = Reg.Matches(temp);
+                    ArrOfСycle.Add(matches.Count);
+                    Code = Code.Remove(0, length); 
+                }                
+                else break;
+            }
+
+            int[] ArrСycleNumber = new int[ArrOfСycle.Count];
+            for (int i = 0; i < ArrСycleNumber.Length; i++)
+            {
+                ArrСycleNumber[i] = ArrOfСycle[i] + 1;
+                Console.WriteLine("Цикломатическое число Мак-Кейба для функции {0}: {1}", i + 1, ArrСycleNumber[i]);          
+            }
+            
+            Console.WriteLine("Количество функций: {0}", CountOfFunctions); 
+            int ResultMetrix = 0;
+            int SumCicleNumber = 0;
+            for (int i = 0; i < ArrСycleNumber.Length; i++)
+                SumCicleNumber = SumCicleNumber + ArrСycleNumber[i];
+            ResultMetrix = SumCicleNumber - CountOfFunctions;
+            Console.WriteLine("Число Мак-Кейба: {0}", ResultMetrix);
+        }
+    }
+}
